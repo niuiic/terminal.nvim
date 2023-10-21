@@ -1,6 +1,9 @@
 local static = require("terminal.static")
 
 local open = function(bufnr)
+	if static.config.on_term_to_open() == false then
+		return
+	end
 	bufnr = bufnr ~= nil and bufnr or vim.api.nvim_create_buf(true, false)
 	vim.api.nvim_set_current_buf(bufnr)
 	vim.cmd("term")
