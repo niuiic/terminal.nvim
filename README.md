@@ -71,6 +71,7 @@ Default configuration here.
 local utils = require("terminal.utils")
 
 local config = {
+	---@type fun(bufnr: number | nil): boolean
 	on_term_to_open = function()
 		-- return false to prevent opening terminal
 		return true
