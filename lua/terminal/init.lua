@@ -1,5 +1,7 @@
 local static = require("terminal.static")
 
+--- open terminal
+---@param bufnr number | nil
 local open = function(bufnr)
 	if static.config.on_term_to_open(bufnr) == false then
 		return

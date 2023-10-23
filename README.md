@@ -76,68 +76,133 @@ local config = {
 		-- return false to prevent opening terminal
 		return true
 	end,
-	on_term_opened = function(bufnr)
-		-- check lua/terminal/utils.lua
-		utils.set_buf_options()
-		utils.set_buf_keymap(bufnr)
-	end,
+	---@type fun(bufnr: number)
+	on_term_opened = function() end,
 }
 ```
 
 It's recommended to set keymap for terminal buffer. Here is an example.
 
 ```lua
-require("terminal").setup({
-	on_term_opened = function(bufnr)
-		require("terminal.utils").set_buf_options()
+local set_line_number = function(show_line_number)
+	local options = {
+		"number",
+		"relativenumber",
+	}
+	for _, option in ipairs(options) do
+		vim.api.nvim_set_option_value(option, show_line_number, {
+			win = 0,
+		})
+	end
+end
 
-		vim.api.nvim_set_option_value("filetype", "terminal", {
-			buf = bufnr,
+local set_keymap = function(bufnr)
+	local modes = { "t", "n" }
+
+	for _, mode in ipairs(modes) do
+		vim.api.nvim_buf_set_keymap(bufnr, mode, "<C-z>", "", {
+			callback = function()
+				require("terminal").open()
+			end,
 		})
 
-		local modes = { "t", "n" }
+		vim.api.nvim_buf_set_keymap(bufnr, mode, "<C-x>", "", {
+			callback = function()
+				vim.api.nvim_buf_delete(bufnr, {
+					force = true,
+				})
+			end,
+		})
 
-		for _, mode in ipairs(modes) do
-			vim.api.nvim_buf_set_keymap(bufnr, mode, "<C-z>", "", {
-				callback = function()
-					require("terminal").open()
-				end,
-			})
+		vim.api.nvim_buf_set_keymap(bufnr, mode, "<C-k>", "", {
+			callback = function()
+				-- 'akinsho/bufferline.nvim' required
+				vim.cmd("BufferLineCycleNext")
+			end,
+		})
 
-			vim.api.nvim_buf_set_keymap(bufnr, mode, "<C-x>", "", {
-				callback = function()
-					vim.api.nvim_buf_delete(bufnr, {
-						force = true,
-					})
-				end,
-			})
+		vim.api.nvim_buf_set_keymap(bufnr, mode, "<C-j>", "", {
+			callback = function()
+				vim.cmd("BufferLineCyclePrev")
+			end,
+		})
 
-			vim.api.nvim_buf_set_keymap(bufnr, mode, "<C-k>", "", {
-				callback = function()
-					-- this command comes from 'akinsho/bufferline.nvim'
-					vim.cmd("BufferLineCycleNext")
-				end,
-			})
+		vim.api.nvim_buf_set_keymap(bufnr, mode, "<space>bh", "", {
+			callback = function()
+				vim.cmd("BufferLineMovePrev")
+			end,
+		})
 
-			vim.api.nvim_buf_set_keymap(bufnr, mode, "<C-j>", "", {
-				callback = function()
-					vim.cmd("BufferLineCyclePrev")
-				end,
-			})
+		vim.api.nvim_buf_set_keymap(bufnr, mode, "<space>bl", "", {
+			callback = function()
+				vim.cmd("BufferLineMoveNext")
+			end,
+		})
 
-			vim.api.nvim_buf_set_keymap(bufnr, mode, "<space>bo", "", {
-				callback = function()
-					vim.cmd("BufferLinePick")
-				end,
-			})
+		vim.api.nvim_buf_set_keymap(bufnr, mode, "<space>bo", "", {
+			callback = function()
+				vim.cmd("BufferLinePick")
+			end,
+		})
 
-			vim.api.nvim_buf_set_keymap(bufnr, mode, "<C-q>", "", {
-				callback = function()
-					-- custom command
-					vim.cmd("Quit")
-				end,
-			})
-		end
+		vim.api.nvim_buf_set_keymap(bufnr, mode, "<C-q>", "", {
+			callback = function()
+				-- custom command
+				vim.cmd("Quit")
+			end,
+		})
+
+		vim.api.nvim_buf_set_keymap(bufnr, mode, "<esc>", "", {
+			callback = function()
+				vim.cmd("stopinsert")
+			end,
+		})
+	end
+end
+
+return {
+	config = function()
+		local term_win = 0
+
+		require("terminal").setup({
+			on_term_opened = function(bufnr)
+				vim.api.nvim_set_option_value("filetype", "terminal", {
+					buf = bufnr,
+				})
+
+				term_win = vim.api.nvim_get_current_win()
+
+				set_line_number(false)
+
+				set_keymap(bufnr)
+			end,
+		})
+
+		vim.api.nvim_create_autocmd({ "BufEnter" }, {
+			pattern = { "*" },
+			callback = function(args)
+				local filetype = vim.api.nvim_get_option_value("filetype", {
+					buf = args.buf,
+				})
+
+				if filetype == "terminal" then
+					vim.cmd("startinsert")
+				end
+
+				if vim.api.nvim_get_current_win() == term_win then
+					set_line_number(filetype ~= "terminal")
+				end
+			end,
+		})
 	end,
-})
+	keys = {
+		{
+			"<C-z>",
+			function()
+				require("terminal").open()
+			end,
+			desc = "open terminal",
+		},
+	},
+}
 ```
