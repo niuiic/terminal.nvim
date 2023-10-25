@@ -10,7 +10,8 @@ local open = function(bufnr)
 	vim.api.nvim_set_current_buf(bufnr)
 	vim.cmd("term")
 	vim.cmd("startinsert")
-	static.config.on_term_opened(bufnr)
+	local pid = vim.fn.jobpid(vim.o.channel) or 0
+	static.config.on_term_opened(bufnr, pid)
 end
 
 local setup = function(new_config)

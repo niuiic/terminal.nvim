@@ -76,7 +76,7 @@ local config = {
 		-- return false to prevent opening terminal
 		return true
 	end,
-	---@type fun(bufnr: number)
+	---@type fun(bufnr: number, pid: number)
 	on_term_opened = function() end,
 }
 ```
@@ -84,6 +84,9 @@ local config = {
 It's recommended to set keymap for terminal buffer. Here is an example.
 
 ```lua
+local uv = vim.loop
+local terms = {}
+
 local set_line_number = function(show_line_number)
 	local options = {
 		"number",
@@ -108,6 +111,8 @@ local set_keymap = function(bufnr)
 
 		vim.api.nvim_buf_set_keymap(bufnr, mode, "<C-x>", "", {
 			callback = function()
+				uv.kill(terms[bufnr], "sigkill")
+				table.remove(terms, bufnr)
 				vim.api.nvim_buf_delete(bufnr, {
 					force = true,
 				})
@@ -147,7 +152,6 @@ local set_keymap = function(bufnr)
 
 		vim.api.nvim_buf_set_keymap(bufnr, mode, "<C-q>", "", {
 			callback = function()
-				-- custom command
 				vim.cmd("Quit")
 			end,
 		})
@@ -163,7 +167,7 @@ end
 return {
 	config = function()
 		require("terminal").setup({
-			on_term_opened = function(bufnr)
+			on_term_opened = function(bufnr, pid)
 				vim.api.nvim_set_option_value("filetype", "terminal", {
 					buf = bufnr,
 				})
@@ -171,6 +175,8 @@ return {
 				set_line_number(false)
 
 				set_keymap(bufnr)
+
+				terms[bufnr] = pid
 			end,
 		})
 

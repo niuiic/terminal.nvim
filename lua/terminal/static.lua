@@ -3,7 +3,7 @@ local config = {
 	on_term_to_open = function()
 		return true
 	end,
-	---@type fun(bufnr: number)
+	---@type fun(bufnr: number, pid: number)
 	on_term_opened = function() end,
 }
 
