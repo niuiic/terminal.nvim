@@ -2,6 +2,8 @@
 
 Simple and highly configurable terminal plugin for neovim.
 
+[More neovim plugins](https://github.com/niuiic/awesome-neovim-plugins)
+
 ## Why this plugin
 
 - Flexible and highly configurable (needs a little creativity and programming ability)
