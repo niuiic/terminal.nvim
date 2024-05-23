@@ -208,3 +208,13 @@ return {
 	},
 }
 ```
+
+To launch a job with lua, try this.
+
+```lua
+on_term_opened = function(bufnr, pid)
+	vim.defer_fn(function()
+		vim.api.nvim_feedkeys("node index.js\n", "in", true)
+	end, 100)
+end
+```
