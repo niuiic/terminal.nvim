@@ -16,9 +16,16 @@ If you are not interested in these, just keep with `akinsho/toggleterm.nvim` whi
 
 <img src="https://github.com/niuiic/assets/blob/main/terminal.nvim/usage.gif" />
 
+```lua
+---@param bufnr number | nil
+---@param on_term_to_open (fun(bufnr: number | nil): boolean) | nil
+---@param on_term_opened (fun(bufnr: number, pid: number, channel: number)) | nil
+local open = function(bufnr, on_term_to_open, on_term_opened) end
+```
+
 - Basic usage
 
-Open terminal with `require("terminal").open(bufnr)`.
+Open terminal with `require("terminal").open`.
 
 > Open terminal in current buffer with `require("terminal").open(0)`.
 
@@ -78,7 +85,7 @@ local config = {
 		-- return false to prevent opening terminal
 		return true
 	end,
-	---@type fun(bufnr: number, pid: number)
+	---@type fun(bufnr: number, pid: number, channel: number)
 	on_term_opened = function() end,
 }
 ```
@@ -212,9 +219,13 @@ return {
 To launch a job with lua, try this.
 
 ```lua
-on_term_opened = function(bufnr, pid)
+on_term_opened = function(bufnr, pid, channel)
 	vim.defer_fn(function()
 		vim.api.nvim_feedkeys("node index.js\n", "in", true)
+	end, 100)
+	-- or
+	vim.defer_fn(function()
+		vim.api.nvim_chan_send(channel, "echo hello\n")
 	end, 100)
 end
 ```
