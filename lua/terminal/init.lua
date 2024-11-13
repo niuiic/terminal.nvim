@@ -13,9 +13,10 @@ local open = function(bufnr, on_term_to_open, on_term_opened)
 	end
 
 	vim.api.nvim_set_current_buf(bufnr)
-	local channel = vim.api.nvim_open_term(bufnr, {})
+	vim.cmd("terminal")
 	vim.cmd("startinsert")
 
+	local channel = vim.bo.channel
 	local pid = vim.fn.jobpid(channel) or 0
 	on_term_opened(bufnr, pid, channel)
 end
