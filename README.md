@@ -20,8 +20,7 @@ If you are not interested in these, just keep with `akinsho/toggleterm.nvim` whi
 ---@param bufnr number | nil
 ---@param on_term_to_open (fun(bufnr: number | nil): boolean) | nil
 ---@param on_term_opened (fun(bufnr: number, pid: number, channel: number)) | nil
----@param get_cmd (fun(): string) | nil
-local open = function(bufnr, on_term_to_open, on_term_opened, get_cmd) end
+local open = function(bufnr, on_term_to_open, on_term_opened) end
 ```
 
 - Basic usage
@@ -88,10 +87,6 @@ local config = {
 	end,
 	---@type fun(bufnr: number, pid: number, channel: number)
 	on_term_opened = function() end,
-	---@type fun(): string
-	get_cmd = function()
-		return "terminal"
-	end,
 }
 ```
 

@@ -3,23 +3,19 @@ local static = require("terminal.static")
 ---@param bufnr number | nil
 ---@param on_term_to_open (fun(bufnr: number | nil): boolean) | nil
 ---@param on_term_opened (fun(bufnr: number, pid: number, channel: number)) | nil
----@param get_cmd (fun(): string) | nil
-local open = function(bufnr, on_term_to_open, on_term_opened, get_cmd)
+local open = function(bufnr, on_term_to_open, on_term_opened)
 	on_term_to_open = on_term_to_open or static.config.on_term_to_open
 	on_term_opened = on_term_opened or static.config.on_term_opened
-	get_cmd = get_cmd or static.config.get_cmd
 	bufnr = bufnr or vim.api.nvim_create_buf(true, true)
 
 	if on_term_to_open(bufnr) == false then
 		return
 	end
-	local cmd = get_cmd()
 
 	vim.api.nvim_set_current_buf(bufnr)
-	vim.cmd(cmd)
+	local channel = vim.api.nvim_open_term(bufnr, {})
 	vim.cmd("startinsert")
 
-	local channel = vim.bo.channel
 	local pid = vim.fn.jobpid(channel) or 0
 	on_term_opened(bufnr, pid, channel)
 end
