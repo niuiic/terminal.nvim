@@ -20,7 +20,8 @@ If you are not interested in these, just keep with `akinsho/toggleterm.nvim` whi
 ---@param bufnr number | nil
 ---@param on_term_to_open (fun(bufnr: number | nil): boolean) | nil
 ---@param on_term_opened (fun(bufnr: number, pid: number, channel: number)) | nil
-local open = function(bufnr, on_term_to_open, on_term_opened) end
+---@param get_cmd (fun(): string) | nil
+local open = function(bufnr, on_term_to_open, on_term_opened, get_cmd) end
 ```
 
 - Basic usage
@@ -87,13 +88,16 @@ local config = {
 	end,
 	---@type fun(bufnr: number, pid: number, channel: number)
 	on_term_opened = function() end,
+	---@type fun(): string
+	get_cmd = function()
+		return "terminal"
+	end,
 }
 ```
 
 It's recommended to set keymap for terminal buffer. Here is an example.
 
 ```lua
-local uv = vim.loop
 local terms = {}
 
 local set_line_number = function(show_line_number)
@@ -120,7 +124,7 @@ local set_keymap = function(bufnr)
 
 		vim.api.nvim_buf_set_keymap(bufnr, mode, "<C-x>", "", {
 			callback = function()
-				uv.kill(terms[bufnr], "sigkill")
+				vim.uv.kill(terms[bufnr], "sigkill")
 				table.remove(terms, bufnr)
 				vim.api.nvim_buf_delete(bufnr, {
 					force = true,
@@ -195,11 +199,6 @@ return {
 				local filetype = vim.api.nvim_get_option_value("filetype", {
 					buf = args.buf,
 				})
-
-				if filetype == "terminal" then
-					vim.cmd("startinsert")
-				end
-
 				set_line_number(filetype ~= "terminal")
 			end,
 		})
