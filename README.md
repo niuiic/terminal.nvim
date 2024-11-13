@@ -219,12 +219,13 @@ To launch a job with lua, try this.
 
 ```lua
 on_term_opened = function(bufnr, pid, channel)
+	local enter = vim.api.nvim_replace_termcodes("<cr>", true, true, true)
 	vim.defer_fn(function()
-		vim.api.nvim_feedkeys("node index.js\n", "in", true)
+		vim.api.nvim_feedkeys("node index.js" .. enter, "in", true)
 	end, 100)
 	-- or
 	vim.defer_fn(function()
-		vim.api.nvim_chan_send(channel, "echo hello\n")
+		vim.api.nvim_chan_send(channel, "echo hello" .. enter)
 	end, 100)
 end
 ```
